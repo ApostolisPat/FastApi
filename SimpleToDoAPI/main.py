@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 app = FastAPI()
 
+#API: Application Programming Interface
+
 #go to 127.0.0.1:8000/docs to see interactive documentation
 #or
 #127.0.0.1:8000/redoc
