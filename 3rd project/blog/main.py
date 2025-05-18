@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import FastAPI, Depends, status, Response, HTTPException
 from . import schemas, models
 from .database import engine, SessionLocal
@@ -47,20 +48,21 @@ def updated(id, request: schemas.Blog, db: Session = Depends(get_db)):
     
 
 #Request all the blogs
-@app.get("/blog")
+@app.get("/blog", response_model = List[schemas.ShowBlog])
 def all(db: Session = Depends(get_db)):
     blogs = db.query(models.Blog).all() 
     return blogs
 
 #Show a single blog
-@app.get('/blog/{id}', status_code=200)
+#Response will be the same as the ShowBlog schema(Just the title)
+@app.get('/blog/{id}', status_code=200, response_model=schemas.ShowBlog)
 def show(id, response: Response ,db: Session = Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
     #Create server response with status code of 404, for bad requests.
     if not blog:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail = 
                             f'Blog with the id {id} is not available.')
-        """ response.status_code = status.HTTP_404_NOT_FOUND
-        return {'detail': f'Blog with the id {id} is not available.'} """
+        #response.status_code = status.HTTP_404_NOT_FOUND
+        #return {'detail': f'Blog with the id {id} is not available.'}
     return blog
 
