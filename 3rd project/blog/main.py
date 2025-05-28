@@ -19,7 +19,7 @@ def get_db():
         db.close()
 
 #Creating a new entry in our blog table in the database
-@app.post('/blog', status_code=status.HTTP_201_CREATED)
+@app.post('/blog', status_code=status.HTTP_201_CREATED, tags=['blogs'])
 def create(request: schemas.Blog, database_instance: Session = Depends(get_db)):
     new_blog = models.Blog(title=request.title, body=request.body)
     database_instance.add(new_blog)
@@ -28,7 +28,7 @@ def create(request: schemas.Blog, database_instance: Session = Depends(get_db)):
     return new_blog
 
 #Delete a blog
-@app.delete('/blog/{id}', status_code = status.HTTP_204_NO_CONTENT)
+@app.delete('/blog/{id}', status_code = status.HTTP_204_NO_CONTENT, tags=['blogs'])
 def delete(id, database_instance: Session = Depends(get_db)):
     blog = database_instance.query(models.Blog).filter(models.Blog.id == id)
     if not blog.first():
@@ -38,7 +38,7 @@ def delete(id, database_instance: Session = Depends(get_db)):
     return 'Blog is deleted successfuly'
     
 #Update a blog
-@app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED)
+@app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED, tags=['blogs'])
 def updated(id, request: schemas.Blog, db: Session = Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id)
     if not blog.first():
@@ -49,14 +49,14 @@ def updated(id, request: schemas.Blog, db: Session = Depends(get_db)):
     
 
 #Request all the blogs
-@app.get("/blog", response_model = List[schemas.ShowBlog])
+@app.get("/blog", response_model = List[schemas.ShowBlog], tags=['blogs'])
 def all(db: Session = Depends(get_db)):
     blogs = db.query(models.Blog).all() 
     return blogs
 
 #Show a single blog
 #Response will be the same as the ShowBlog schema(Just the title)
-@app.get('/blog/{id}', status_code=200, response_model=schemas.ShowBlog)
+@app.get('/blog/{id}', status_code=200, response_model=schemas.ShowBlog, tags=['blogs'])
 def show(id, response: Response ,db: Session = Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
     #Create server response with status code of 404, for bad requests.
@@ -71,7 +71,7 @@ def show(id, response: Response ,db: Session = Depends(get_db)):
 
 
 #Create new user
-@app.post('/user', response_model=schemas.ShowUser)
+@app.post('/user', response_model=schemas.ShowUser, tags=['users'])
 def create_user(request: schemas.User, db: Session = Depends(get_db)):
     
     new_user = models.User(name=request.name, email=request.email, password=Hash.bcrypt(request.password))
@@ -80,7 +80,8 @@ def create_user(request: schemas.User, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
-@app.get('/user/{id}', response_model=schemas.ShowUser)
+#Find user
+@app.get('/user/{id}', response_model=schemas.ShowUser, tags=['users'])
 def get_user(id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == id).first()
     if not user:
