@@ -1,6 +1,6 @@
 # JSON objects that serve as Request Bodies
 
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 
 class BlogBase(BaseModel):
@@ -34,5 +34,7 @@ class Login(BaseModel):
     username: str
     password: str
     
+class TokenData(BaseModel):
+    username: Optional[str] = None
 
     
