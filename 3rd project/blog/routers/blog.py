@@ -3,53 +3,38 @@ from .. import schemas, models
 from typing import List
 from ..database import get_db
 from sqlalchemy.orm import Session
+from ..repository import blog as blog_repository
 
-router = APIRouter()
+router = APIRouter(
+    #Define the prefix for this router
+    prefix="/blog",
+    #Define the tags for this router
+    tags=['Blogs']
+)
 
 #Request all the blogs
-@router.get("/blog", response_model = List[schemas.ShowBlog], tags=['blogs'])
+@router.get("/", response_model = List[schemas.ShowBlog])
 def all(db: Session = Depends(get_db)):
-    blogs = db.query(models.Blog).all() 
-    return blogs
+    return blog_repository.get_all(db)
 
 #Creating a new entry in our blog table in the database
-@router.post('/blog', status_code=status.HTTP_201_CREATED, tags=['blogs'])
+@router.post('/', status_code=status.HTTP_201_CREATED)
 def create(request: schemas.Blog, database_instance: Session = Depends(get_db)):
-    new_blog = models.Blog(title=request.title, body=request.body, user_id = 1)
-    database_instance.add(new_blog)
-    database_instance.commit()
-    database_instance.refresh(new_blog)
-    return new_blog
+    return blog_repository.create(request, database_instance)
+    
 
 #Delete a blog
-@router.delete('/blog/{id}', status_code = status.HTTP_204_NO_CONTENT, tags=['blogs'])
-def delete(id, database_instance: Session = Depends(get_db)):
-    blog = database_instance.query(models.Blog).filter(models.Blog.id == id)
-    if not blog.first():
-        raise HTTPException(status_code = 404, detail=f"Blog with id {id} is not found")
-    blog.delete(synchronize_session=False)
-    database_instance.commit()
-    return 'Blog is deleted successfuly'
+@router.delete('/{id}', status_code = status.HTTP_204_NO_CONTENT)
+def delete(id: int, database_instance: Session = Depends(get_db)):
+    return blog_repository.destroy(id, database_instance)
 
 #Update a blog
-@router.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED, tags=['blogs'])
-def updated(id, request: schemas.Blog, db: Session = Depends(get_db)):
-    blog = db.query(models.Blog).filter(models.Blog.id == id)
-    if not blog.first():
-        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND, detail = f'Blog with id {id} is not found')
-    blog.update(request.model_dump())
-    db.commit()
-    return 'updated successfuly'
+@router.put('/{id}', status_code=status.HTTP_202_ACCEPTED)
+def updated(id: int, request: schemas.Blog, db: Session = Depends(get_db)):
+    return blog_repository.update(id, request, db)
 
 #Show a single blog
 #Response will be the same as the ShowBlog schema(Just the title)
-@router.get('/blog/{id}', status_code=200, response_model=schemas.ShowBlog, tags=['blogs'])
-def show(id ,db: Session = Depends(get_db)):
-    blog = db.query(models.Blog).filter(models.Blog.id == id).first()
-    #Create server response with status code of 404, for bad requests.
-    if not blog:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail = 
-                            f'Blog with the id {id} is not available.')
-        #response.status_code = status.HTTP_404_NOT_FOUND
-        #return {'detail': f'Blog with the id {id} is not available.'}
-    return blog
+@router.get('/{id}', status_code=200, response_model=schemas.ShowBlog)
+def show(id: int ,db: Session = Depends(get_db)):
+    return blog_repository.show(id, db)
