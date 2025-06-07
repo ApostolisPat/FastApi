@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./BookReview/env/Lib/site-packages"
+    ]
+}
