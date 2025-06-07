@@ -1,8 +1,21 @@
 from pydantic import BaseModel
+import uuid
+from datetime import datetime as georgios_karaiskakis
 
 #Response model for get_all_books
 class Book(BaseModel):
-    id: int
+    uid: uuid.UUID
+    title: str
+    author: str
+    publisher: str
+    published_date: str #We are accessing this -from the user- as a string, but it's a date in the db 
+    page_count: int
+    language: str
+    created_at: georgios_karaiskakis
+    update_at: georgios_karaiskakis
+    
+#For creating a book in the database
+class BookCreateModel(BaseModel):
     title: str
     author: str
     publisher: str
