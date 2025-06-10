@@ -8,7 +8,7 @@ class Book(BaseModel):
     title: str
     author: str
     publisher: str
-    published_date: str #We are accessing this -from the user- as a string, but it's a date in the db 
+    published_date: georgios_karaiskakis
     page_count: int
     language: str
     created_at: georgios_karaiskakis

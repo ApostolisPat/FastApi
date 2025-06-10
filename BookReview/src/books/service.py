@@ -6,6 +6,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from .schemas import BookCreateModel, BookUpdateModel
 from sqlmodel import select, desc
 from .models import Book
+from datetime import datetime
 
 class BookService:
     async def get_all_books(self, session: AsyncSession):
@@ -33,6 +34,8 @@ class BookService:
             **book_data_dict
         )
         
+        new_book.published_date = datetime.strptime(book_data_dict['published_date'],"%Y-%m-%d")
+        
         session.add(new_book) # Add operation in the database
         
         await session.commit() #Commit to the database
@@ -40,7 +43,7 @@ class BookService:
         return new_book
     
     async def update_books(self, book_uid: str, update_data: BookUpdateModel, session: AsyncSession):
-        book_to_update = self.get_book(book_uid, session) #use the get_book function to retrieve the book from db
+        book_to_update = await self.get_book(book_uid, session) #use the get_book function to retrieve the book from db
 
         if book_to_update is not None:
             update_data_dict = update_data.model_dump()
@@ -57,12 +60,14 @@ class BookService:
       
     
     async def delete_books(self, book_uid: str, session: AsyncSession):
-        book_to_delete = self.get_book(book_uid, session)
+        book_to_delete = await self.get_book(book_uid, session)
         
         if book_to_delete is not None:
             await session.delete(book_to_delete)
             
             await session.commit()
+            
+            return {}
             
         else:
             return None
